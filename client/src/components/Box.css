@@ -1,0 +1,30 @@
+.box {
+  margin: 5px;
+  width: 18rem;
+  height: 12rem;
+  min-height: 10rem;
+  min-width: 15rem;
+  max-height: 12rem;
+  max-width: 18rem;
+  padding: 10px 10px 100px 10px;
+  overflow: hidden;
+}
+
+.img {
+    display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 120px;
+  height: 120px;
+}
+.grid {
+  min-height: 10%;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+.grid > div {
+  flex-basis: calc(10% - 10px);
+}
+
