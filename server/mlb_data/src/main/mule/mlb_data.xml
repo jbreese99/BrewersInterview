@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="00be6395-3c11-4909-94bd-a7db467b5b1e" basePath="/api">
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="BrewersCloudhub" doc:name="HTTP Request configuration" doc:id="5e76cbb8-a873-4da5-a02e-be230b55b634" basePath="/api" >
+		<http:request-connection host="${api.host}" />
+	</http:request-config>
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="a08a508e-0c62-4e7d-9112-1f824d8844a7" file="${env}-config.yaml" key="${secure.key}" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<global-property doc:name="Global Property" doc:id="476824ea-45dc-43ca-b6c8-2dde3030e201" name="env" value="dev" />
+	<global-property doc:name="Global Property" doc:id="3efcece9-3a81-4936-8cb1-1c9009d87299" name="secure.key" value="Hint: TeamName ++ year.now()" />
+	<configuration-properties doc:name="Configuration properties" doc:id="e9473cb2-336a-46a1-8d9f-647637a78295" file="${env}-config.yaml" />
+	<flow name="teams" doc:id="a6a20d37-dc7a-4b89-91bc-c364b9c0b5a2" >
+		<http:listener doc:name="/teams" doc:id="4b956c4d-bba4-4c20-bcef-818f2b93d4a4" config-ref="HTTP_Listener_config" path="/teams"/>
+		<http:request method="GET" doc:name="Request" doc:id="a6d2b2f4-ada5-4bc3-9744-7b6144efd179" config-ref="BrewersCloudhub" path="/teams">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"api-key" : Mule::p('secure::api.api-key')
+}]]]></http:headers>
+		</http:request>
+	</flow>
+	<flow name="40man" doc:id="524e08b0-2bb7-433e-a42d-b2ebc356f0be" >
+		<http:listener doc:name="/teams/{teamId}/players" doc:id="8296432c-313b-4c4d-9701-25fafaa4be20" config-ref="HTTP_Listener_config" path="/teams/{teamId}/players"/>
+		<http:request method="GET" doc:name="Request" doc:id="92788c8e-9ad0-4813-8b68-d881827bb4e4" config-ref="BrewersCloudhub" path="#['/teams/' ++ attributes.uriParams.teamId ++ '/players']">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"api-key" : Mule::p('secure::api.api-key')
+}]]]></http:headers>
+		</http:request>
+	</flow>
+	<flow name="player" doc:id="44e3ca58-7bfb-48ba-b3bd-19c863cd8c0b" >
+		<http:listener doc:name="/player/{playerId}" doc:id="0ed9f1d3-ac77-4ba1-af82-081c6be80bda" config-ref="HTTP_Listener_config" path="/player/{playerId}"/>
+		<http:request method="GET" doc:name="Request" doc:id="7c4dd2d1-00a1-4c48-a1f0-fd09d40d6530" path="#['/player/' ++ attributes.uriParams.playerId]" config-ref="BrewersCloudhub">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"api-key" : Mule::p('secure::api.api-key')
+}]]]></http:headers>
+		</http:request>
+	</flow>
+</mule>
